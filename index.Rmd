@@ -1,0 +1,160 @@
+---
+title: "Raíces de Funciones"
+subtitle: "Método de Newton-Raphson"  
+author: "Alejandro Ucan"
+date: '`r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      slideNumberFormat: "%current%"
+      highlightStyle: github
+      highlightLines: true
+      ratio: 16:9
+      countIncrementalSlides: true
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(png)
+library(grid)
+library(knitr)
+knitr::opts_chunk$set(
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+)
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_light(base_color = "#ff900e")
+```
+
+```{r xaringan-editable, echo=FALSE}
+xaringanExtra::use_editable(expires = 1)
+xaringanExtra::use_scribble()
+xaringanExtra::use_webcam()
+```
+
+# Problemática:
+<center>
+</br>
+
+<span style="font-size:35px"> Resolver $f(x)=0$ </span>
+<center>
+---
+
+# Una solución:
+
+.pull-left[
+</br> 
+<span style="font-size=30px"> Si $f\in C^2[a,b]$ podemos usar la aproximación mediante __polinomios de Taylor__ para algún $x_0\in[a,b],$ tal qué:
+1. $f(x_0)\neq 0,$ y
+1. $|x_0-p|<\varepsilon.$
+]
+--
+.pull-right[
+<span style="font-size=20px">
+ Sabemos que
+ $$ f(x)=f(x_0)+(x-x_0)f'(x_0)+\frac{(x-x_0)^2}{2}f''(\xi(x)) $$
+
+]
+---
+# El método
+
+<center>
+</br>
+
+<span style="font-size:35px"> $p\approx x_0-\frac{f(x_0)}{f'(x_0)}$ </span>
+<center> 
+
+--
+<span style="font-size:30px"> El método consiste en:
+1. Comenzar con una aproximación inicial $p_0.$
+1. Generar una sucesión $\{p_n\}_{n\in\mathbb{N}}$ data por $$p_n=p_{n-1}-\frac{f(p_{n-1})}{f'(p_{n-1})}.$$ </span>
+
+---
+# El algoritmo:
+.pull-left[
+<span style="font-size:30px">
+__Entrada:__ 
+* $p_0$: la aproximación inicial.
+* $TOL$: la tolerancia que tendremos a nuestra aproximación.
+* $N_0$: número máximo de iteraciones. 
+
+__Salida:__
+* $p$: mejor aproximación a la raíz de $f(x)=0.$ ] 
+
+.pull-right[
+1. Sea $i=1.$
+1. Mientras $i\leq N_0,$ haga pasos 3-6.
+1. Calcule la aproximación $p=p_0-\frac{f(p_0)}{f'(x_0)}.$
+1. Si $|p-p_0|<TOL$: 
+      1. Imprimir $p$;
+      1. Parar.
+1. Tome $i=i+1.$
+1. Tome $p_0=p.$
+1. Imprimir: El método falló luego de $N_0$ iteraciones. ]
+
+---
+# Ejemplo:
+
+<span style="font-size:20px"> Encontremos los puntos fijos de la función $f(x)=\cos(x)$ en el intervalo $[0,\frac{\pi}{2}].$ </span>
+--
+<center>
+```{r eval=TRUE, echo=FALSE}
+x <- seq(0, pi/2, 0.01)
+fig<-plot(x,x,type="l", col="red", ylab="")
+fig<-lines(x, cos(x),type="l",col="blue")
+legend("topleft", c("x", "cos(x)"), fill = c("red", "blue"))
+
+```
+<center>
+
+
+
+
+---
+````{python eval=TRUE, echo=FALSE }
+import math as m
+def newton(p0, n0, tol):
+    i=1;
+    app=[p0]
+    while i<n0:
+        aux=m.cos(p0)-p0;
+        auxdev=-m.sin(p0)-1;
+        p=p0-(aux/auxdev)
+        if abs(p-p0)<=tol:
+            print("La mejor aproximación a la raíz es:", p, "en la iteración ", i, ".");
+            return p,app;
+        i=i+1;
+        p0=p;
+        app.append(p0)
+    print("El método fracasó despues de ",n0," iteraciones.");
+    return "error"
+````
+
+```{python eval=TRUE, echo=TRUE}
+p,app=newton(1,100,1e-16);
+```
+--
+### El error por cada approximación es:
+```{r, echo=FALSE, out.width="30%"}
+img<-readPNG("../ClaseMuestra/error.png")
+grid.raster(img)
+```
+
+---
+# ¿Esto funciona siempre?
+
+<span style="font-size:30px"> ¿Qué nos garantiza que este método funciona siempre? </span>
+
+--
+
+> <span style="font-size:30px"> __TEOREMA:__ 
+> Para $f\in C^2[a,b]$ y $p\in[a,b]$ tal que $f(p)=0$ y $f'(p)\neq 0.$ Existe $\delta$ de tal manera que la sucesión $\{p_n\}_{n\in\mathbb{N}}$ obtenida por el método de Newton-Raphson converge para cualquier aproximación inicial en $[p-\delta,p+\delta].$
+
+</span>
